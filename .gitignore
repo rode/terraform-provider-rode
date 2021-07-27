@@ -1,0 +1,5 @@
+.idea/
+terraform-provider-rode*
+*.tfstate*
+**/.terraform/
+.terraform.lock.hcl
