@@ -35,7 +35,7 @@ func resourcePolicyGroup() *schema.Resource {
 				Type:        schema.TypeString,
 			},
 			"updated": {
-				Description: "Updated",
+				Description: "Last updated timestamp",
 				Computed:    true,
 				Type:        schema.TypeString,
 			},
@@ -62,14 +62,6 @@ func dataToPolicyGroup(d *schema.ResourceData, policyGroup *v1alpha1.PolicyGroup
 	policyGroup.Name = d.Get("name").(string)
 	policyGroup.Description = d.Get("description").(string)
 
-	if value, ok := d.GetOk("deleted"); ok {
-		deleted, err := strconv.ParseBool(value.(string))
-		if err != nil {
-			return fmt.Errorf(`error parsing value of "deleted" field: %s`, err)
-		}
-		policyGroup.Deleted = deleted
-	}
-
 	if value, ok := d.GetOk("created"); ok {
 		created, err := asProtoTimestamp(value)
 		if err != nil {
@@ -84,6 +76,14 @@ func dataToPolicyGroup(d *schema.ResourceData, policyGroup *v1alpha1.PolicyGroup
 			return fmt.Errorf(`error parsing "updated" timestamp: %s`, err)
 		}
 		policyGroup.Updated = updated
+	}
+
+	if value, ok := d.GetOk("deleted"); ok {
+		deleted, err := strconv.ParseBool(value.(string))
+		if err != nil {
+			return fmt.Errorf(`error parsing value of "deleted" field: %s`, err)
+		}
+		policyGroup.Deleted = deleted
 	}
 
 	return nil
