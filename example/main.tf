@@ -8,8 +8,8 @@ terraform {
 }
 
 provider "rode" {
-  host                          = "localhost:50051"
-  disable_transport_security    = true
+  host                       = "localhost:50051"
+  disable_transport_security = true
 }
 
 resource "rode_policy_group" "example" {
@@ -18,10 +18,10 @@ resource "rode_policy_group" "example" {
 }
 
 resource "rode_policy" "example" {
-  name = "example"
-  description = "policy managed by Terraform"
-  message = "Terraform"
-  rego_content =<<EOF
+  name         = "example"
+  description  = "policy managed by Terraform"
+  message      = "Terraform"
+  rego_content = <<EOF
 package tf_example
 
 pass {
@@ -41,6 +41,6 @@ EOF
 }
 
 resource "rode_policy_assignment" "example" {
-  policy_group = rode_policy_group.example.name
+  policy_group      = rode_policy_group.example.name
   policy_version_id = rode_policy.example.policy_version_id
 }
