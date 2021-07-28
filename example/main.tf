@@ -20,9 +20,8 @@ resource "rode_policy_group" "example" {
 resource "rode_policy" "example" {
   name = "example"
   description = "policy managed by Terraform"
-  policy {
-    message = "Terraform"
-    rego_content =<<EOF
+  message = "Terraform"
+  rego_content =<<EOF
 package tf_example
 
 pass {
@@ -39,5 +38,9 @@ violations[result] {
 	}
 }
 EOF
-  }
+}
+
+resource "rode_policy_assignment" "example" {
+  policy_group = rode_policy_group.example.name
+  policy_version_id = rode_policy.example.policy_version_id
 }

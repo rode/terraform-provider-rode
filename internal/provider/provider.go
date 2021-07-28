@@ -75,7 +75,7 @@ func New() *schema.Provider {
 		ResourcesMap: map[string]*schema.Resource{
 			"rode_policy_group": resourcePolicyGroup(),
 			"rode_policy": resourcePolicy(),
-			"rode_assignment": resourcePolicyAssignment(),
+			"rode_policy_assignment": resourcePolicyAssignment(),
 		},
 	}
 
