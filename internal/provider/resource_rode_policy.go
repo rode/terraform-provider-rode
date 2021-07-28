@@ -33,7 +33,7 @@ func resourcePolicy() *schema.Resource {
 				Type:        schema.TypeInt,
 			},
 			"policy_version_id": {
-				Computed: true,
+				Computed:    true,
 				Description: "Policy version id",
 				Type:        schema.TypeString,
 			},
@@ -69,10 +69,10 @@ func resourcePolicy() *schema.Resource {
 func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rode := meta.(v1alpha1.RodeClient)
 	policy := &v1alpha1.Policy{
-		Name: d.Get("name").(string),
+		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
 		Policy: &v1alpha1.PolicyEntity{
-			Message: d.Get("message").(string),
+			Message:     d.Get("message").(string),
 			RegoContent: d.Get("rego_content").(string),
 		},
 	}

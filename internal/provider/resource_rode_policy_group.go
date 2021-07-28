@@ -52,7 +52,7 @@ func resourcePolicyGroupCreate(ctx context.Context, d *schema.ResourceData, meta
 	rode := meta.(v1alpha1.RodeClient)
 
 	policyGroup := &v1alpha1.PolicyGroup{
-		Name: d.Get("name").(string),
+		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
 	}
 	response, err := rode.CreatePolicyGroup(ctx, policyGroup)

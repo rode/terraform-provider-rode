@@ -73,8 +73,8 @@ func New() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"rode_policy_group": resourcePolicyGroup(),
-			"rode_policy": resourcePolicy(),
+			"rode_policy_group":      resourcePolicyGroup(),
+			"rode_policy":            resourcePolicy(),
 			"rode_policy_assignment": resourcePolicyAssignment(),
 		},
 	}
@@ -84,15 +84,15 @@ func New() *schema.Provider {
 
 		config := &common.ClientConfig{
 			Rode: &common.RodeClientConfig{
-				Host: data.Get("host").(string),
+				Host:                     data.Get("host").(string),
 				DisableTransportSecurity: data.Get("disable_transport_security").(bool),
 			},
 			OIDCAuth: &common.OIDCAuthConfig{
-				ClientID:     data.Get("oidc_client_id").(string),
-				ClientSecret: data.Get("oidc_client_secret").(string),
-				TokenURL:     data.Get("oidc_token_url").(string),
+				ClientID:              data.Get("oidc_client_id").(string),
+				ClientSecret:          data.Get("oidc_client_secret").(string),
+				TokenURL:              data.Get("oidc_token_url").(string),
 				TlsInsecureSkipVerify: data.Get("oidc_tls_insecure_skip_verify").(bool),
-				Scopes:       data.Get("oidc_scopes").(string),
+				Scopes:                data.Get("oidc_scopes").(string),
 			},
 			BasicAuth: &common.BasicAuthConfig{
 				Username: data.Get("username").(string),

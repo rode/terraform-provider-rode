@@ -46,7 +46,7 @@ func resourcePolicyAssignmentCreate(ctx context.Context, d *schema.ResourceData,
 	rode := meta.(v1alpha1.RodeClient)
 	policyAssignment := &v1alpha1.PolicyAssignment{
 		PolicyVersionId: d.Get("policy_version_id").(string),
-		PolicyGroup: d.Get("policy_group").(string),
+		PolicyGroup:     d.Get("policy_group").(string),
 	}
 
 	response, err := rode.CreatePolicyAssignment(ctx, policyAssignment)

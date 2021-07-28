@@ -1,6 +1,6 @@
 MAKEFLAGS += --silent
 
-.PHONY: build install example
+.PHONY: build install example fmtcheck tfcheck fmt
 
 VERSION=0.0.1
 GOOS=$(shell go env GOOS)
@@ -18,3 +18,16 @@ install: build
 
 example: build
 	terraform -chdir=example apply
+
+fmtcheck:
+	exit $(shell gofmt -s -l . | wc -l)
+
+tfcheck:
+	terraform fmt -recursive
+
+fmt:
+	gofmt -s -w .
+
+test: fmtcheck tfcheck
+	go vet ./...
+	go test -v ./...
