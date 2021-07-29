@@ -34,9 +34,9 @@ jobs:
     container: golang:1.16-alpine
     services:
       opa:
-        image: openpolicyagent/opa:0.24.0
+        image: openpolicyagent/opa:0.24.0-debug
         options: >-
-          -- run --server
+          --entrypoint 'run --server'
 #      elasticsearch:
 #        image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
 #        env:
@@ -57,11 +57,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: check reachable
+      - name: Kind Cluster
+        uses: helm/kind-action@v1.2.0
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.0.3
+      - name: Deploy
         run: |
-          apk add --no-cache curl
-          curl http://elasticsearch:9200
-          curl http://opa:8181
-          curl http://grafeas:8080
-          curl http://rode:50051
+          cd services
+          terraform init
+          terraform apply
+          kubectl get po -n rode
 
