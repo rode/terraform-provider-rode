@@ -44,8 +44,8 @@ jobs:
           ES_JAVA_OPTS: '-Xms512m -Xmx512m'
       grafeas:
         image: ghcr.io/rode/grafeas-elasticsearch:v0.8.7
-        volumes:
-          # TODO: mount volume with grafeas config
+#        volumes:
+#           TODO: mount volume with grafeas config
       rode:
         image: ghcr.io/rode/rode:v0.14.5
         env:
