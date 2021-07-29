@@ -11,6 +11,15 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: 1.16
+      - name: Configure Go Caches
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
       - name: Download Dependencies
         run: |
           go mod download
@@ -20,3 +29,38 @@ jobs:
       - name: Build Provider
         run: |
           make build
+  integration:
+    runs-on: ubuntu-latest
+    container: golang:1.16-alpine
+    services:
+      opa:
+        image: openpolicyagent/opa:0.24.0
+      elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
+        env:
+          'discovery.type': single-node
+          'xpack.security.enabled': false
+          'bootstrap.memory_lock': true
+          ES_JAVA_OPTS: '-Xms512m -Xmx512m'
+      grafeas:
+        image: ghcr.io/rode/grafeas-elasticsearch:v0.8.7
+        volumes:
+          # TODO: mount volume with grafeas config
+      rode:
+        image: ghcr.io/rode/rode:v0.14.5
+        env:
+          ELASTICSEARCH_HOST: http://elasticsearch:9200
+#          ELASTICSEARCH_USERNAME: ""
+#          ELASTICSEARCH_PASSWORD: ""
+          GRAFEAS_HOST: grafeas:8080
+          OPA_HOST: http://opa:8181
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: check reachable
+        run: |
+          curl http://elasticsearch:9200
+          curl http://opa:8181
+          curl http://grafeas:8080
+          curl http://rode:50051
+
