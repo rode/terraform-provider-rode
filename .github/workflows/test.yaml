@@ -44,6 +44,6 @@ jobs:
         run: |
           cd services
           terraform init
-          terraform apply -autoapprove
+          terraform apply -auto-approve
           kubectl get po -n rode
 
