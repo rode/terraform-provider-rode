@@ -58,8 +58,8 @@ jobs:
           terraform -chdir=services init
           terraform -chdir=services apply -auto-approve
 
-          kubectl port-forward svc/rode 50051 &
+          kubectl -n rode-tf port-forward svc/rode 50051 &
           trap 'pkill kubectl' EXIT
 
-          curl http://localhost:50051/v1alpha1/policies
+          make testacc
 
