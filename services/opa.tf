@@ -1,32 +1,14 @@
-resource "helm_release" "opa" {
-  name       = "opa"
-  namespace  = kubernetes_namespace.rode.metadata[0].name
-  chart      = "opa"
-  repository = "https://open-policy-agent.github.io/kube-mgmt/charts"
-  version    = "0.12.1"
-
-  set {
-    name  = "imageTag"
-    value = "0.24.0"
-  }
-
-  set {
-    name  = "mgmt.enabled"
-    value = false
-  }
-}
-
 resource "kubernetes_deployment" "opa" {
   metadata {
     name = kubernetes_namespace.rode.metadata[0].name
-    labels {
+    labels = {
       app = "opa"
     }
   }
   spec {
     template {
       metadata {
-        labels {
+        labels = {
           app = "opa"
         }
       }
@@ -50,9 +32,7 @@ resource "kubernetes_deployment" "opa" {
             initial_delay_seconds = 3
             period_seconds        = 5
           }
-          args  = [
-            "run",
-            "--server"]
+          args  = ["run", "--server"]
         }
       }
     }
