@@ -62,4 +62,5 @@ jobs:
           trap 'pkill kubectl' EXIT
 
           make testacc
-
+        env:
+          RODE_HOST: 'localhost:50051'
