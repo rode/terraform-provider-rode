@@ -17,4 +17,8 @@ image:
   tag: v0.14.5
 EOF
   ]
+
+  depends_on = [
+    helm_release.grafeas,
+  ]
 }

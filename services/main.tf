@@ -8,10 +8,6 @@ terraform {
       source  = "hashicorp/kubernetes"
       version = "2.3.2"
     }
-    random     = {
-      source  = "hashicorp/random"
-      version = "3.0.1"
-    }
   }
 }
 
@@ -27,6 +23,6 @@ provider "kubernetes" {
 
 resource "kubernetes_namespace" "rode" {
   metadata {
-    name = "rode"
+    name = "rode-tf"
   }
 }
