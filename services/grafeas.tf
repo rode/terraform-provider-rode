@@ -1,6 +1,7 @@
 resource "helm_release" "grafeas" {
-  chart      = "grafeas-elasticsearch"
   name       = "grafeas"
+  namespace = kubernetes_namespace.rode.metadata[0].name
+  chart      = "grafeas-elasticsearch"
   repository = "https://rode.github.io/charts"
   version    = "0.2.0"
   wait       = true
@@ -12,7 +13,8 @@ grafeas:
     refresh: "true"
 elasticsearch:
   enabled: false
-image: v0.8.2
+image:
+  tag: v0.8.2
 EOF
   ]
 }
