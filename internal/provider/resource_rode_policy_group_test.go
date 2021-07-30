@@ -14,7 +14,7 @@ import (
 
 func TestAccPolicyGroup_basic(t *testing.T) {
 	policyGroup := &v1alpha1.PolicyGroup{
-		Name: fmt.Sprintf("tf-acc-%s", strings.ToLower(fake.LetterN(10))),
+		Name:        fmt.Sprintf("tf-acc-%s", strings.ToLower(fake.LetterN(10))),
 		Description: fake.LetterN(10),
 	}
 
@@ -78,7 +78,6 @@ func testAccCheckPolicyGroupExists(resourceName string, expected *v1alpha1.Polic
 		if policyGroup.Deleted {
 			return fmt.Errorf("policy group was deleted")
 		}
-
 
 		return nil
 	}

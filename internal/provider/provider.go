@@ -26,7 +26,7 @@ func New() *schema.Provider {
 			"disable_transport_security": {
 				Description: "",
 				Type:        schema.TypeBool,
-				Default: true, // TODO: remove, fix acceptance tests
+				Default:     true, // TODO: remove, fix acceptance tests
 				Optional:    true,
 			},
 			// TODO: separate oidc/basic objects instead?
