@@ -34,6 +34,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16
+      - name: Configure Go Caches
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
       - name: Kind Cluster
         uses: helm/kind-action@v1.2.0
       - name: Install Terraform
@@ -42,8 +55,11 @@ jobs:
           terraform_version: 1.0.3
       - name: Deploy
         run: |
-          cd services
-          terraform init
-          terraform apply -auto-approve
-          kubectl get po -n rode
+          terraform -chdir=services init
+          terraform -chdir=services apply -auto-approve
+
+          kubectl port-forward svc/rode 50051 &
+          trap 'pkill kubectl' EXIT
+
+          curl http://localhost:50051/v1alpha1/policies
 
