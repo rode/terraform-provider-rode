@@ -6,6 +6,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/rode/rode/common"
 	"google.golang.org/grpc"
+	"os"
+	"strconv"
 )
 
 func init() {
@@ -18,11 +20,13 @@ func New() *schema.Provider {
 			"host": {
 				Description: "",
 				Type:        schema.TypeString,
-				Required:    true,
+				//Required:    true,
+				Optional: true, // TODO: remove, fix acceptance tests
 			},
 			"disable_transport_security": {
 				Description: "",
 				Type:        schema.TypeBool,
+				Default:     true, // TODO: remove, fix acceptance tests
 				Optional:    true,
 			},
 			// TODO: separate oidc/basic objects instead?
@@ -81,11 +85,25 @@ func New() *schema.Provider {
 
 	provider.ConfigureContextFunc = func(ctx context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
 		// TODO: configurable lazy init of client
+		// TODO: expose more env options
+
+		rodeHost := data.Get("host").(string)
+		if rodeHost == "" {
+			rodeHost = os.Getenv("RODE_HOST")
+		}
+		rodeDisableTransportSecurity := data.Get("disable_transport_security").(bool)
+		if os.Getenv("RODE_DISABLE_TRANSPORT_SECURITY") != "" {
+			disableTransportSecurity, err := strconv.ParseBool(os.Getenv("RODE_DISABLE_TRANSPORT_SECURITY"))
+			if err != nil {
+				return nil, diag.Errorf("error parsing RODE_DISABLE_TRANSPORT_SECURITY env var: %s", err)
+			}
+			rodeDisableTransportSecurity = disableTransportSecurity
+		}
 
 		config := &common.ClientConfig{
 			Rode: &common.RodeClientConfig{
-				Host:                     data.Get("host").(string),
-				DisableTransportSecurity: data.Get("disable_transport_security").(bool),
+				Host:                     rodeHost,
+				DisableTransportSecurity: rodeDisableTransportSecurity,
 			},
 			OIDCAuth: &common.OIDCAuthConfig{
 				ClientID:              data.Get("oidc_client_id").(string),
