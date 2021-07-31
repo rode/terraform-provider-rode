@@ -93,5 +93,7 @@ jobs:
           go install github.com/google/addlicense@master
       - name: Check License Headers
         run: |
+          set -e
+          shopt -s globstar
           addlicense -check **/*.go
         shell: bash
