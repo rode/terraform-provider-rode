@@ -11,11 +11,11 @@ import (
 )
 
 func TestAccPolicyGroup_basic(t *testing.T) {
+	resourceName := "rode_policy_group.test"
 	policyGroup := &v1alpha1.PolicyGroup{
 		Name:        fmt.Sprintf("tf-acc-%s", strings.ToLower(fake.LetterN(10))),
 		Description: fake.LetterN(10),
 	}
-	var actualPolicyGroup v1alpha1.PolicyGroup
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -27,13 +27,12 @@ func TestAccPolicyGroup_basic(t *testing.T) {
 			{
 				Config: testAccPolicyGroupConfig(policyGroup),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("rode_policy_group.test", "name", policyGroup.Name),
-					resource.TestCheckResourceAttr("rode_policy_group.test", "description", policyGroup.Description),
-					resource.TestCheckResourceAttrSet("rode_policy_group.test", "created"),
-					resource.TestCheckResourceAttrSet("rode_policy_group.test", "updated"),
-					resource.TestCheckResourceAttr("rode_policy_group.test", "deleted", "false"),
-					testAccCheckPolicyGroupExists("rode_policy_group.test", &actualPolicyGroup),
-					testAccCheckPolicyGroupValues(policyGroup, &actualPolicyGroup),
+					resource.TestCheckResourceAttr(resourceName, "name", policyGroup.Name),
+					resource.TestCheckResourceAttr(resourceName, "description", policyGroup.Description),
+					resource.TestCheckResourceAttrSet(resourceName, "created"),
+					resource.TestCheckResourceAttrSet(resourceName, "updated"),
+					resource.TestCheckResourceAttr(resourceName, "deleted", "false"),
+					testAccCheckPolicyGroupExists(resourceName, policyGroup),
 				),
 			},
 		},
@@ -49,7 +48,7 @@ resource "rode_policy_group" "test" {
 `, policyGroup.Name, policyGroup.Description)
 }
 
-func testAccCheckPolicyGroupExists(resourceName string, policyGroup *v1alpha1.PolicyGroup) resource.TestCheckFunc {
+func testAccCheckPolicyGroupExists(resourceName string, expected *v1alpha1.PolicyGroup) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -61,7 +60,7 @@ func testAccCheckPolicyGroupExists(resourceName string, policyGroup *v1alpha1.Po
 		}
 
 		rodeClient := testAccProvider.Meta().(v1alpha1.RodeClient)
-		group, err := rodeClient.GetPolicyGroup(context.Background(), &v1alpha1.GetPolicyGroupRequest{
+		actual, err := rodeClient.GetPolicyGroup(context.Background(), &v1alpha1.GetPolicyGroupRequest{
 			Name: rs.Primary.ID,
 		})
 
@@ -69,15 +68,6 @@ func testAccCheckPolicyGroupExists(resourceName string, policyGroup *v1alpha1.Po
 			return err
 		}
 
-		*policyGroup = *group
-
-		return nil
-	}
-}
-
-
-func testAccCheckPolicyGroupValues(expected *v1alpha1.PolicyGroup, actual *v1alpha1.PolicyGroup) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
 		if expected.Name != actual.Name {
 			return fmt.Errorf("expected policy group name to be '%s', but was '%s'", expected.Name, actual.Name)
 		}
