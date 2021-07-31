@@ -14,118 +14,126 @@ func init() {
 	schema.DescriptionKind = schema.StringMarkdown
 }
 
-func New() *schema.Provider {
-	provider := &schema.Provider{
-		Schema: map[string]*schema.Schema{
-			"host": {
-				Description: "",
-				Type:        schema.TypeString,
-				//Required:    true,
-				Optional: true, // TODO: remove, fix acceptance tests
+func New(version string) func() *schema.Provider {
+	return func() *schema.Provider {
+		provider := &schema.Provider{
+			Schema: map[string]*schema.Schema{
+				"host": {
+					Description: "Host and port of the Rode instance. Can also be specified by setting the `RODE_HOST` environment variable.",
+					Type:        schema.TypeString,
+					Optional:    true,
+				},
+				"disable_transport_security": {
+					Description: "Disables transport security for the gRPC connection to Rode. Can also be set with the `RODE_DISABLE_TRANSPORT_SECURITY` environment variable.",
+					Type:        schema.TypeBool,
+					Default:     false,
+					Optional:    true,
+				},
+				"oidc_client_id": {
+					Description:   "OIDC/OAuth2 client id that is permitted the client credentials grant. Can be set with the `RODE_OIDC_CLIENT_ID` environment variable.",
+					Type:          schema.TypeString,
+					Optional:      true,
+					ConflictsWith: []string{"basic_username", "basic_password"},
+				},
+				"oidc_client_secret": {
+					Description:   "Corresponding client secret for oidc_client_id. Can be set with the `RODE_OIDC_CLIENT_SECRET` environment variable.",
+					Type:          schema.TypeString,
+					Optional:      true,
+					ConflictsWith: []string{"basic_username", "basic_password"},
+					Sensitive:     true,
+				},
+				"oidc_token_url": {
+					Description: "OAuth2 token url. Can be set with the OIDC_TOKEN_URL environment variable",
+					Optional:    true,
+					Type:        schema.TypeString,
+				},
+				"oidc_scopes": {
+					Description: "A space-delimited list of scopes to request in the client credentials grant. Can also be set with the `RODE_OIDC_SCOPES` environment variable.",
+					Type:        schema.TypeString,
+					Optional:    true,
+				},
+				"oidc_tls_insecure_skip_verify": {
+					Description: "Disable transport security when communicating with the OAuth2 server. Only recommended for local development. Set with the `RODE_OIDC_TLS_INSECURE_SKIP_VERIFY` environment variable.",
+					Type:        schema.TypeBool,
+					Optional:    true,
+				},
+				"basic_username": {
+					Description:   "The username configured in the Rode instance for basic auth. Cannot be configured alongside any of the OIDC options. Can be set with the `RODE_BASIC_USERNAME` environment variable.",
+					Type:          schema.TypeString,
+					Optional:      true,
+					ConflictsWith: []string{"oidc_client_id", "oidc_client_secret"},
+				},
+				"basic_password": {
+					Description: "Corresponding password for basic_username. Can be set with the `RODE_BASIC_PASSWORD` environment variable.",
+					Type:          schema.TypeString,
+					Optional:      true,
+					ConflictsWith: []string{"oidc_client_id", "oidc_client_secret"},
+					Sensitive:     true,
+				},
 			},
-			"disable_transport_security": {
-				Description: "",
-				Type:        schema.TypeBool,
-				Default:     true, // TODO: remove, fix acceptance tests
-				Optional:    true,
+			ResourcesMap: map[string]*schema.Resource{
+				"rode_policy_group":      resourcePolicyGroup(),
+				"rode_policy":            resourcePolicy(),
+				"rode_policy_assignment": resourcePolicyAssignment(),
 			},
-			// TODO: separate oidc/basic objects instead?
-			"oidc_client_id": {
-				Description:   "",
-				Type:          schema.TypeString,
-				Optional:      true,
-				RequiredWith:  []string{"oidc_client_secret"},
-				ConflictsWith: []string{"username", "password"},
-			},
-			"oidc_client_secret": {
-				Description:   "",
-				Type:          schema.TypeString,
-				Optional:      true,
-				RequiredWith:  []string{"oidc_client_id"},
-				ConflictsWith: []string{"username", "password"},
-				Sensitive:     true,
-			},
-			"oidc_token_url": {
-				Description:  "",
-				Optional:     true,
-				Type:         schema.TypeString,
-				RequiredWith: []string{"oidc_client_id"},
-			},
-			"oidc_scopes": {
-				Description: "",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "",
-			},
-			"oidc_tls_insecure_skip_verify": {
-				Description: "",
-				Type:        schema.TypeBool,
-				Optional:    true,
-			},
-			"username": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				RequiredWith:  []string{"password"},
-				ConflictsWith: []string{"oidc_client_id", "oidc_client_secret"},
-			},
-			"password": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				RequiredWith:  []string{"username"},
-				ConflictsWith: []string{"oidc_client_id", "oidc_client_secret"},
-				Sensitive:     true,
-			},
-		},
-		ResourcesMap: map[string]*schema.Resource{
-			"rode_policy_group":      resourcePolicyGroup(),
-			"rode_policy":            resourcePolicy(),
-			"rode_policy_assignment": resourcePolicyAssignment(),
-		},
-	}
-
-	provider.ConfigureContextFunc = func(ctx context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
-		// TODO: configurable lazy init of client
-		// TODO: expose more env options
-
-		rodeHost := data.Get("host").(string)
-		if rodeHost == "" {
-			rodeHost = os.Getenv("RODE_HOST")
 		}
-		rodeDisableTransportSecurity := data.Get("disable_transport_security").(bool)
-		if os.Getenv("RODE_DISABLE_TRANSPORT_SECURITY") != "" {
-			disableTransportSecurity, err := strconv.ParseBool(os.Getenv("RODE_DISABLE_TRANSPORT_SECURITY"))
+
+		provider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+			// TODO: configurable lazy init of client
+
+			rodeDisableTransportSecurity, err := getProviderOptionBool(d, "disable_transport_security", "RODE_DISABLE_TRANSPORT_SECURITY")
 			if err != nil {
-				return nil, diag.Errorf("error parsing RODE_DISABLE_TRANSPORT_SECURITY env var: %s", err)
+				return nil, diag.FromErr(err)
 			}
-			rodeDisableTransportSecurity = disableTransportSecurity
+			oidcInsecureSkipVerify, err := getProviderOptionBool(d, "oidc_tls_insecure_skip_verify", "RODE_OIDC_TLS_INSECURE_SKIP_VERIFY")
+			if err != nil {
+				return nil, diag.FromErr(err)
+			}
+
+			config := &common.ClientConfig{
+				Rode: &common.RodeClientConfig{
+					Host:                     getProviderOption(d, "host", "RODE_HOST"),
+					DisableTransportSecurity: rodeDisableTransportSecurity,
+				},
+				OIDCAuth: &common.OIDCAuthConfig{
+					ClientID:              getProviderOption(d, "oidc_client_id", "RODE_OIDC_CLIENT_ID"),
+					ClientSecret:          getProviderOption(d, "oidc_client_secret", "RODE_OIDC_CLIENT_SECRET"),
+					TokenURL:              getProviderOption(d, "oidc_token_url", "RODE_OIDC_TOKEN_URL"),
+					TlsInsecureSkipVerify: oidcInsecureSkipVerify,
+					Scopes:                getProviderOption(d, "oidc_scopes", "RODE_OIDC_SCOPES"),
+				},
+				BasicAuth: &common.BasicAuthConfig{
+					Username: getProviderOption(d, "basic_username", "RODE_BASIC_USERNAME"),
+					Password: getProviderOption(d, "basic_password", "RODE_BASIC_PASSWORD"),
+				},
+			}
+
+			rode, err := common.NewRodeClient(
+				config,
+				grpc.WithUserAgent(provider.UserAgent("terraform-provider-rode", version)),
+			)
+
+			return rode, diag.FromErr(err)
 		}
 
-		config := &common.ClientConfig{
-			Rode: &common.RodeClientConfig{
-				Host:                     rodeHost,
-				DisableTransportSecurity: rodeDisableTransportSecurity,
-			},
-			OIDCAuth: &common.OIDCAuthConfig{
-				ClientID:              data.Get("oidc_client_id").(string),
-				ClientSecret:          data.Get("oidc_client_secret").(string),
-				TokenURL:              data.Get("oidc_token_url").(string),
-				TlsInsecureSkipVerify: data.Get("oidc_tls_insecure_skip_verify").(bool),
-				Scopes:                data.Get("oidc_scopes").(string),
-			},
-			BasicAuth: &common.BasicAuthConfig{
-				Username: data.Get("username").(string),
-				Password: data.Get("password").(string),
-			},
-		}
+		return provider
+	}
+}
 
-		rode, err := common.NewRodeClient(
-			config,
-			// TODO: source version, either by embedding file or with goreleaser
-			grpc.WithUserAgent(provider.UserAgent("terraform-provider-rode", "0.0.1")),
-		)
-
-		return rode, diag.FromErr(err)
+func getProviderOption(d *schema.ResourceData, key, env string) string {
+	envVal := os.Getenv(env)
+	if envVal != "" {
+		return envVal
 	}
 
-	return provider
+	return d.Get(key).(string)
+}
+
+func getProviderOptionBool(d *schema.ResourceData, key, env string) (bool, error) {
+	envVal := os.Getenv(env)
+	if envVal != "" {
+		return strconv.ParseBool(envVal)
+	}
+
+	return d.Get(key).(bool), nil
 }
