@@ -24,7 +24,7 @@ func resourcePolicy() *schema.Resource {
 			},
 			"description": {
 				Description: "A brief summary of the policy",
-				Required:    true,
+				Optional:    true,
 				Type:        schema.TypeString,
 			},
 			"current_version": {
@@ -41,6 +41,7 @@ func resourcePolicy() *schema.Resource {
 				Description: "A summary of changes since the last version",
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 			},
 			"rego_content": {
 				Description: "The Rego code",

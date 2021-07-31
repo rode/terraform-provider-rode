@@ -62,3 +62,12 @@ jobs:
         env:
           RODE_HOST: 'localhost:50051'
           RODE_DISABLE_TRANSPORT_SECURITY: 'true'
+
+      - name: Apply Examples
+        run: |
+          kubectl -n terraform-provider-rode port-forward svc/rode 50051 &
+          trap 'pkill kubectl' EXIT
+
+          make install
+          terraform -chdir=example init
+          terraform -chdir=example apply -auto-approve

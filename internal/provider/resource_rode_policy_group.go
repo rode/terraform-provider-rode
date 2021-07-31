@@ -4,7 +4,14 @@ import (
 	"context"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/rode/rode/proto/v1alpha1"
+	"regexp"
+)
+
+var (
+	policyNameRegexp                = regexp.MustCompile("^[a-z0-9-_]+$")
+	policyGroupNameValidateDiagFunc = validation.ToDiagFunc(validation.StringMatch(policyNameRegexp, "policy group names may only contain lowercase alphanumeric strings, hyphens, or underscores."))
 )
 
 func resourcePolicyGroup() *schema.Resource {
@@ -16,12 +23,11 @@ func resourcePolicyGroup() *schema.Resource {
 		DeleteContext: resourcePolicyGroupDelete,
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Description: "Unique identifier for the policy group",
-				Type:        schema.TypeString,
-				ForceNew:    true,
-				Required:    true,
-
-				// TODO: validate func/regex
+				Description:      "Unique identifier for the policy group",
+				Type:             schema.TypeString,
+				ForceNew:         true,
+				Required:         true,
+				ValidateDiagFunc: policyGroupNameValidateDiagFunc,
 			},
 			"description": {
 				Description: "A brief summary of the intended use of the policy group",
@@ -39,7 +45,7 @@ func resourcePolicyGroup() *schema.Resource {
 				Type:        schema.TypeString,
 			},
 			"deleted": {
-				Description: "",
+				Description: "Indicates that the policy group has been deleted.",
 				Computed:    true,
 				Type:        schema.TypeBool,
 			},
