@@ -64,7 +64,7 @@ func New(version string) func() *schema.Provider {
 					ConflictsWith: []string{"oidc_client_id", "oidc_client_secret"},
 				},
 				"basic_password": {
-					Description: "Corresponding password for basic_username. Can be set with the `RODE_BASIC_PASSWORD` environment variable.",
+					Description:   "Corresponding password for basic_username. Can be set with the `RODE_BASIC_PASSWORD` environment variable.",
 					Type:          schema.TypeString,
 					Optional:      true,
 					ConflictsWith: []string{"oidc_client_id", "oidc_client_secret"},
