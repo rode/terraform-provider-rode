@@ -9,7 +9,10 @@ import (
 	"regexp"
 )
 
-var policyNameRegexp = regexp.MustCompile("^[a-z0-9-_]+$")
+var (
+	policyNameRegexp                = regexp.MustCompile("^[a-z0-9-_]+$")
+	policyGroupNameValidateDiagFunc = validation.ToDiagFunc(validation.StringMatch(policyNameRegexp, "policy group names may only contain lowercase alphanumeric strings, hyphens, or underscores."))
+)
 
 func resourcePolicyGroup() *schema.Resource {
 	return &schema.Resource{
@@ -20,11 +23,11 @@ func resourcePolicyGroup() *schema.Resource {
 		DeleteContext: resourcePolicyGroupDelete,
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Description:  "Unique identifier for the policy group",
-				Type:         schema.TypeString,
-				ForceNew:     true,
-				Required:     true,
-				ValidateFunc: validation.StringMatch(policyNameRegexp, "Policy group names may only contain lowercase alphanumeric strings, hyphens, or underscores."),
+				Description:      "Unique identifier for the policy group",
+				Type:             schema.TypeString,
+				ForceNew:         true,
+				Required:         true,
+				ValidateDiagFunc: policyGroupNameValidateDiagFunc,
 			},
 			"description": {
 				Description: "A brief summary of the intended use of the policy group",

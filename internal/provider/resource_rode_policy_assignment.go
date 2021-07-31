@@ -2,11 +2,35 @@ package provider
 
 import (
 	"context"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/rode/rode/proto/v1alpha1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"strconv"
+	"strings"
+)
+
+var (
+	isUuidValidateDiagFunc          = validation.ToDiagFunc(validation.IsUUID)
+	policyVersionIdValidateDiagFunc = func(v interface{}, p cty.Path) diag.Diagnostics {
+		policyVersionId := v.(string)
+
+		parts := strings.Split(policyVersionId, ".")
+		if len(parts) != 2 {
+			return diag.Errorf("policy version id does not match format")
+		}
+
+		policyId := parts[0]
+		_, err := strconv.Atoi(parts[1])
+		if err != nil {
+			return diag.Errorf("policy version id does not contain a version: %s", err)
+		}
+
+		return isUuidValidateDiagFunc(policyId, p)
+	}
 )
 
 func resourcePolicyAssignment() *schema.Resource {
@@ -18,15 +42,17 @@ func resourcePolicyAssignment() *schema.Resource {
 		DeleteContext: resourcePolicyAssignmentDelete,
 		Schema: map[string]*schema.Schema{
 			"policy_version_id": {
-				Description: "Unique identifier of the versioned policy",
-				Required:    true,
-				Type:        schema.TypeString,
+				Description:      "Unique identifier of the versioned policy",
+				Required:         true,
+				Type:             schema.TypeString,
+				ValidateDiagFunc: policyVersionIdValidateDiagFunc,
 			},
 			"policy_group": {
-				Description: "Name of the policy group to associate with the policy",
-				Required:    true,
-				ForceNew:    true,
-				Type:        schema.TypeString,
+				Description:      "Name of the policy group to associate with the policy",
+				Required:         true,
+				ForceNew:         true,
+				Type:             schema.TypeString,
+				ValidateDiagFunc: policyGroupNameValidateDiagFunc,
 			},
 			"created": {
 				Description: "Creation timestamp",

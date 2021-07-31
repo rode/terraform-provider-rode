@@ -53,7 +53,7 @@ func TestAccPolicyGroup_validate_name(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccPolicyGroupConfig(policyGroup),
-				ExpectError: regexp.MustCompile("Policy group names may only contain"),
+				ExpectError: regexp.MustCompile("policy group names may only contain"),
 			},
 		},
 	})
