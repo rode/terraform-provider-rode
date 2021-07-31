@@ -65,5 +65,6 @@ jobs:
 
       - name: Apply Examples
         run: |
+          make install
           terraform -chdir=example init
           terraform -chdir=example apply -auto-approve
