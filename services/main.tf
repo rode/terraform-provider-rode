@@ -9,20 +9,25 @@ terraform {
       version = "2.3.2"
     }
   }
+  required_version = ">= 1.0.0"
+}
+
+provider "kubernetes" {
+  config_path    = var.kubeconfig
+  config_context = var.kubectx
 }
 
 provider "helm" {
   kubernetes {
-    config_path = var.kubeconfig
+    config_path    = var.kubeconfig
+    config_context = var.kubectx
   }
 }
 
-provider "kubernetes" {
-  config_path = var.kubeconfig
-}
-
-resource "kubernetes_namespace" "rode" {
+resource "kubernetes_namespace" "terraform_provider_rode" {
   metadata {
-    name = "rode-tf"
+    name        = "terraform-provider-rode"
+    annotations = {}
+    labels      = {}
   }
 }
