@@ -1,6 +1,6 @@
 MAKEFLAGS += --silent
 
-.PHONY: build install example fmtcheck fmt testacc
+.PHONY: build install example fmtcheck fmt testacc generate
 
 VERSION=0.0.1
 GOOS=$(shell go env GOOS)
@@ -26,6 +26,9 @@ fmtcheck:
 fmt:
 	gofmt -s -w .
 	terraform fmt -recursive
+
+generate:
+	go generate ./...
 
 test: fmtcheck
 	go vet ./...

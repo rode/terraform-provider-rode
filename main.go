@@ -22,6 +22,8 @@ import (
 	"log"
 )
 
+//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
+
 // populated by goreleaser
 var version string
 
