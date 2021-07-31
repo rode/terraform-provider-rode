@@ -65,6 +65,9 @@ jobs:
 
       - name: Apply Examples
         run: |
+          kubectl -n terraform-provider-rode port-forward svc/rode 50051 &
+          trap 'pkill kubectl' EXIT
+
           make install
           terraform -chdir=example init
           terraform -chdir=example apply -auto-approve
