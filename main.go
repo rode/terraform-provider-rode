@@ -16,14 +16,13 @@ package main
 
 import (
 	"context"
-	_ "embed"
 	"flag"
 	"github.com/alexashley/terraform-provider-rode/internal/provider"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 	"log"
 )
 
-//go:embed version
+// populated by goreleaser
 var version string
 
 func main() {
