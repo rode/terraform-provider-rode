@@ -7,10 +7,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
           go-version: 1.16
+
       - name: Configure Go Caches
         uses: actions/cache@v2
         with:
@@ -20,30 +22,43 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
+
+      - name: Check Tidy
+        run: |
+          go mod tidy && git diff --exit-code go.mod go.sum
+
       - name: Download Dependencies
         run: |
           go mod download
+
       - name: Check Formatting & Test
         run: |
           make test
+
       - name: Build Provider
         run: |
           make build
+
       - name: Kind Cluster
         uses: helm/kind-action@v1.2.0
+
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: 1.0.3
           terraform_wrapper: false # using the wrapper breaks TF acceptance tests
-      - name: Deploy
+
+      - name: Deploy Test Environment
         run: |
           terraform -chdir=services init
           terraform -chdir=services apply -auto-approve
 
-          kubectl -n rode-tf port-forward svc/rode 50051 &
+      - name: Run Acceptance Tests
+        run: |
+          kubectl -n terraform-provider-rode port-forward svc/rode 50051 &
           trap 'pkill kubectl' EXIT
 
           make testacc
         env:
           RODE_HOST: 'localhost:50051'
+          RODE_DISABLE_TRANSPORT_SECURITY: 'true'
