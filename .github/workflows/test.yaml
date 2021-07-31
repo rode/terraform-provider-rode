@@ -62,3 +62,8 @@ jobs:
         env:
           RODE_HOST: 'localhost:50051'
           RODE_DISABLE_TRANSPORT_SECURITY: 'true'
+
+      - name: Apply Examples
+        run: |
+          terraform -chdir=example init
+          terraform -chdir=example apply -auto-approve
