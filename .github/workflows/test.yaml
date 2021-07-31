@@ -81,8 +81,8 @@ jobs:
           trap 'pkill kubectl' EXIT
 
           make install
-          terraform -chdir=example init
-          terraform -chdir=example apply -auto-approve
+          terraform -chdir=examples init
+          terraform -chdir=examples apply -auto-approve
   license-check:
     runs-on: ubuntu-latest
     steps:

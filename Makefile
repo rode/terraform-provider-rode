@@ -1,6 +1,6 @@
 MAKEFLAGS += --silent
 
-.PHONY: build install example fmtcheck fmt testacc generate
+.PHONY: build install examples fmtcheck fmt testacc generate
 
 VERSION=0.0.1
 GOOS=$(shell go env GOOS)
@@ -16,8 +16,8 @@ install: build
 	mkdir -p ~/.terraform.d/plugins/${REGISTRY}/${NAMESPACE}/${NAME}/${VERSION}/${GOOS}_${GOARCH}/
 	mv terraform-provider-rode ~/.terraform.d/plugins/${REGISTRY}/${NAMESPACE}/${NAME}/${VERSION}/${GOOS}_${GOARCH}/
 
-example: build
-	terraform -chdir=example apply
+examples: build
+	terraform -chdir=examples apply
 
 fmtcheck:
 	terraform fmt -recursive -check

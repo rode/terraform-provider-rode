@@ -13,7 +13,7 @@ A Terraform provider for [rode](https://github.com/rode/rode).
 
 > \* Implemented for create, read, & delete. Missing update and import 
 
-See the [example](./example) directory for resource usage.
+See the [example](examples) directory for resource usage.
 
 ## Local Development
 
