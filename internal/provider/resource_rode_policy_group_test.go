@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/rode/rode/proto/v1alpha1"
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -34,6 +35,25 @@ func TestAccPolicyGroup_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "deleted", "false"),
 					testAccCheckPolicyGroupExists(resourceName, policyGroup),
 				),
+			},
+		},
+	})
+}
+
+func TestAccPolicyGroup_validate_name(t *testing.T) {
+	policyGroup := &v1alpha1.PolicyGroup{
+		Name: fmt.Sprintf("tf-acc-%s!@#$", strings.ToUpper(fake.LetterN(10))),
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+		ProviderFactories: testAccProvidersFactory,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccPolicyGroupConfig(policyGroup),
+				ExpectError: regexp.MustCompile("Policy group names may only contain"),
 			},
 		},
 	})
