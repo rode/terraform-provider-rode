@@ -6,13 +6,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/rode/rode/proto/v1alpha1"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"strings"
 	"testing"
 )
 
 func TestAccPolicyGroup_basic(t *testing.T) {
+	resourceName := "rode_policy_group.test"
 	policyGroup := &v1alpha1.PolicyGroup{
 		Name:        fmt.Sprintf("tf-acc-%s", strings.ToLower(fake.LetterN(10))),
 		Description: fake.LetterN(10),
@@ -23,16 +22,17 @@ func TestAccPolicyGroup_basic(t *testing.T) {
 			testAccPreCheck(t)
 		},
 		ProviderFactories: testAccProvidersFactory,
-		CheckDestroy:      testAccCheckPolicyGroupDestroyed,
+		CheckDestroy:      testAccCheckPolicyGroupDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccPolicyGroupConfig(policyGroup),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("rode_policy_group.test", "name", policyGroup.Name),
-					resource.TestCheckResourceAttr("rode_policy_group.test", "description", policyGroup.Description),
-					resource.TestCheckResourceAttrSet("rode_policy_group.test", "created"),
-					resource.TestCheckResourceAttrSet("rode_policy_group.test", "updated"),
-					testAccCheckPolicyGroupExists("rode_policy_group.test", policyGroup),
+					resource.TestCheckResourceAttr(resourceName, "name", policyGroup.Name),
+					resource.TestCheckResourceAttr(resourceName, "description", policyGroup.Description),
+					resource.TestCheckResourceAttrSet(resourceName, "created"),
+					resource.TestCheckResourceAttrSet(resourceName, "updated"),
+					resource.TestCheckResourceAttr(resourceName, "deleted", "false"),
+					testAccCheckPolicyGroupExists(resourceName, policyGroup),
 				),
 			},
 		},
@@ -59,6 +59,34 @@ func testAccCheckPolicyGroupExists(resourceName string, expected *v1alpha1.Polic
 			return fmt.Errorf("id is not set in state")
 		}
 
+		rodeClient := testAccProvider.Meta().(v1alpha1.RodeClient)
+		actual, err := rodeClient.GetPolicyGroup(context.Background(), &v1alpha1.GetPolicyGroupRequest{
+			Name: rs.Primary.ID,
+		})
+
+		if err != nil {
+			return err
+		}
+
+		if expected.Name != actual.Name {
+			return fmt.Errorf("expected policy group name to be '%s', but was '%s'", expected.Name, actual.Name)
+		}
+
+		if expected.Description != actual.Description {
+			return fmt.Errorf("expected policy group description to be '%s', but was '%s'", expected.Description, actual.Description)
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckPolicyGroupDestroy(s *terraform.State) error {
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "rode_policy_group" {
+			continue
+		}
+
+		rodeClient := testAccProvider.Meta().(v1alpha1.RodeClient)
 		policyGroup, err := rodeClient.GetPolicyGroup(context.Background(), &v1alpha1.GetPolicyGroupRequest{
 			Name: rs.Primary.ID,
 		})
@@ -67,43 +95,8 @@ func testAccCheckPolicyGroupExists(resourceName string, expected *v1alpha1.Polic
 			return err
 		}
 
-		if policyGroup.Name != expected.Name {
-			return fmt.Errorf("expected policy group name to be %s, got %s", expected.Name, policyGroup.Name)
-		}
-
-		if policyGroup.Description != expected.Description {
-			return fmt.Errorf("expected policy group description to be %s, got %s", expected.Description, policyGroup.Description)
-		}
-
-		if policyGroup.Deleted {
-			return fmt.Errorf("policy group was deleted")
-		}
-
-		return nil
-	}
-}
-
-func testAccCheckPolicyGroupDestroyed(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "rode_policy_group" {
-			continue
-		}
-
-		policyGroup, err := rodeClient.GetPolicyGroup(context.Background(), &v1alpha1.GetPolicyGroupRequest{
-			Name: rs.Primary.ID,
-		})
-
-		if err == nil {
-			if policyGroup != nil && policyGroup.Name == rs.Primary.ID && !policyGroup.Deleted {
-				return fmt.Errorf("policy group %s still exists", rs.Primary.ID)
-
-			}
-
-			return nil
-		}
-
-		if status.Code(err) != codes.NotFound {
-			return err
+		if policyGroup != nil && !policyGroup.Deleted {
+			return fmt.Errorf("policy group %s still exists", rs.Primary.ID)
 		}
 	}
 	return nil

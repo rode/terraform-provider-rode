@@ -5,8 +5,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/rode/rode/proto/v1alpha1"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 func resourcePolicyGroup() *schema.Resource {
@@ -22,6 +20,7 @@ func resourcePolicyGroup() *schema.Resource {
 				Type:        schema.TypeString,
 				ForceNew:    true,
 				Required:    true,
+
 				// TODO: validate func/regex
 			},
 			"description": {
@@ -70,11 +69,6 @@ func resourcePolicyGroupRead(ctx context.Context, d *schema.ResourceData, meta i
 
 	policyGroup, err := rode.GetPolicyGroup(ctx, &v1alpha1.GetPolicyGroupRequest{Name: d.Id()})
 	if err != nil {
-		if status.Code(err) == codes.NotFound {
-			d.SetId("")
-			return nil
-		}
-
 		return diag.FromErr(err)
 	}
 
@@ -82,6 +76,7 @@ func resourcePolicyGroupRead(ctx context.Context, d *schema.ResourceData, meta i
 	d.Set("description", policyGroup.Description)
 	d.Set("created", formatProtoTimestamp(policyGroup.Created))
 	d.Set("updated", formatProtoTimestamp(policyGroup.Updated))
+	d.Set("deleted", policyGroup.Deleted)
 
 	return nil
 }
@@ -94,10 +89,6 @@ func resourcePolicyGroupDelete(ctx context.Context, d *schema.ResourceData, meta
 	rode := meta.(v1alpha1.RodeClient)
 
 	_, err := rode.DeletePolicyGroup(ctx, &v1alpha1.DeletePolicyGroupRequest{Name: d.Id()})
-	if status.Code(err) == codes.NotFound {
-		d.SetId("")
-		return nil
-	}
 
 	return diag.FromErr(err)
 }
