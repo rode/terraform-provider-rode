@@ -12,13 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package provider
+// +build tools
+
+package tools
 
 import (
-	"google.golang.org/protobuf/types/known/timestamppb"
-	"time"
+	_ "github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs"
 )
-
-func formatProtoTimestamp(timestamp *timestamppb.Timestamp) string {
-	return timestamp.AsTime().Format(time.RFC3339Nano)
-}

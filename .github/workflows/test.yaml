@@ -7,12 +7,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
           go-version: 1.16
-
       - name: Configure Go Caches
         uses: actions/cache@v2
         with:
@@ -22,37 +20,52 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-
       - name: Check Tidy
         run: |
           go mod tidy && git diff --exit-code go.mod go.sum
-
       - name: Download Dependencies
         run: |
           go mod download
-
       - name: Check Formatting & Test
         run: |
           make test
-
       - name: Build Provider
         run: |
           make build
-
+      - name: Check Documentation
+        run: |
+          make generate
+          git diff --exit-code docs/
+  acceptance:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
       - name: Kind Cluster
         uses: helm/kind-action@v1.2.0
-
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: 1.0.3
           terraform_wrapper: false # using the wrapper breaks TF acceptance tests
-
       - name: Deploy Test Environment
         run: |
           terraform -chdir=services init
           terraform -chdir=services apply -auto-approve
-
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16
+      - name: Configure Go Caches
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
       - name: Run Acceptance Tests
         run: |
           kubectl -n terraform-provider-rode port-forward svc/rode 50051 &
@@ -62,12 +75,29 @@ jobs:
         env:
           RODE_HOST: 'localhost:50051'
           RODE_DISABLE_TRANSPORT_SECURITY: 'true'
-
       - name: Apply Examples
         run: |
           kubectl -n terraform-provider-rode port-forward svc/rode 50051 &
           trap 'pkill kubectl' EXIT
 
           make install
-          terraform -chdir=example init
-          terraform -chdir=example apply -auto-approve
+          terraform -chdir=examples init
+          terraform -chdir=examples apply -auto-approve
+  license-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16
+      - name: Install addlicense
+        run: |
+          go install github.com/google/addlicense@master
+      - name: Check License Headers
+        run: |
+          set -e
+          shopt -s globstar
+          addlicense -check **/*.go
+        shell: bash
