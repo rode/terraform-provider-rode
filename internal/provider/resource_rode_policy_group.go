@@ -68,7 +68,10 @@ func resourcePolicyGroup() *schema.Resource {
 }
 
 func resourcePolicyGroupCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rode := meta.(v1alpha1.RodeClient)
+	rode := meta.(*rodeClient)
+	if err := rode.init(); err != nil {
+		return diag.FromErr(err)
+	}
 
 	policyGroup := &v1alpha1.PolicyGroup{
 		Name:        d.Get("name").(string),
@@ -85,7 +88,10 @@ func resourcePolicyGroupCreate(ctx context.Context, d *schema.ResourceData, meta
 }
 
 func resourcePolicyGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rode := meta.(v1alpha1.RodeClient)
+	rode := meta.(*rodeClient)
+	if err := rode.init(); err != nil {
+		return diag.FromErr(err)
+	}
 
 	policyGroup, err := rode.GetPolicyGroup(ctx, &v1alpha1.GetPolicyGroupRequest{Name: d.Id()})
 	if err != nil {
@@ -106,7 +112,10 @@ func resourcePolicyGroupUpdate(ctx context.Context, d *schema.ResourceData, meta
 }
 
 func resourcePolicyGroupDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rode := meta.(v1alpha1.RodeClient)
+	rode := meta.(*rodeClient)
+	if err := rode.init(); err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err := rode.DeletePolicyGroup(ctx, &v1alpha1.DeletePolicyGroupRequest{Name: d.Id()})
 

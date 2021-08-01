@@ -80,7 +80,11 @@ func resourcePolicy() *schema.Resource {
 }
 
 func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rode := meta.(v1alpha1.RodeClient)
+	rode := meta.(*rodeClient)
+	if err := rode.init(); err != nil {
+		return diag.FromErr(err)
+	}
+
 	policy := &v1alpha1.Policy{
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
@@ -101,7 +105,10 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 }
 
 func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rode := meta.(v1alpha1.RodeClient)
+	rode := meta.(*rodeClient)
+	if err := rode.init(); err != nil {
+		return diag.FromErr(err)
+	}
 
 	policy, err := rode.GetPolicy(ctx, &v1alpha1.GetPolicyRequest{Id: d.Id()})
 	if err != nil {
@@ -126,7 +133,10 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 }
 
 func resourcePolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rode := meta.(v1alpha1.RodeClient)
+	rode := meta.(*rodeClient)
+	if err := rode.init(); err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err := rode.DeletePolicy(ctx, &v1alpha1.DeletePolicyRequest{
 		Id: d.Id(),
