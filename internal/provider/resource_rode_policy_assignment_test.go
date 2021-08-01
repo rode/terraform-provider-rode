@@ -28,9 +28,6 @@ import (
 	"testing"
 )
 
-//go:embed data/minimal.rego
-var minimalPolicy string
-
 func TestAccPolicyAssignment_basic(t *testing.T) {
 	resourceName := "rode_policy_assignment.test"
 	policy := &v1alpha1.Policy{
