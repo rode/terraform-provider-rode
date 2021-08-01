@@ -89,7 +89,7 @@ func testAccPolicyExists(resourceName string, expected *v1alpha1.Policy) resourc
 			return fmt.Errorf("id is not set in state")
 		}
 
-		rodeClient := testAccProvider.Meta().(v1alpha1.RodeClient)
+		rodeClient := testAccProvider.Meta().(*rodeClient)
 		actual, err := rodeClient.GetPolicy(context.Background(), &v1alpha1.GetPolicyRequest{
 			Id: rs.Primary.ID,
 		})
@@ -123,7 +123,7 @@ func testAccPolicyDestroy(s *terraform.State) error {
 			continue
 		}
 
-		rodeClient := testAccProvider.Meta().(v1alpha1.RodeClient)
+		rodeClient := testAccProvider.Meta().(*rodeClient)
 		policy, err := rodeClient.GetPolicy(context.Background(), &v1alpha1.GetPolicyRequest{
 			Id: rs.Primary.ID,
 		})

@@ -144,7 +144,7 @@ func testAccCheckPolicyAssignmentExists(resourceName, policyGroupName string) re
 			return fmt.Errorf("id is not set in state")
 		}
 
-		rodeClient := testAccProvider.Meta().(v1alpha1.RodeClient)
+		rodeClient := testAccProvider.Meta().(*rodeClient)
 		actual, err := rodeClient.GetPolicyAssignment(context.Background(), &v1alpha1.GetPolicyAssignmentRequest{
 			Id: rs.Primary.ID,
 		})
@@ -166,7 +166,7 @@ func testAccPolicyAssignmentDestroy(s *terraform.State) error {
 			continue
 		}
 
-		rodeClient := testAccProvider.Meta().(v1alpha1.RodeClient)
+		rodeClient := testAccProvider.Meta().(*rodeClient)
 		_, err := rodeClient.GetPolicyAssignment(context.Background(), &v1alpha1.GetPolicyAssignmentRequest{
 			Id: rs.Primary.ID,
 		})

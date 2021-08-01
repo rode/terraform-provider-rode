@@ -19,7 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/rode/rode/common"
-	"google.golang.org/grpc"
 )
 
 func init() {
@@ -41,6 +40,12 @@ func New(version string) func() *schema.Provider {
 					Type:        schema.TypeBool,
 					Optional:    true,
 					DefaultFunc: schema.EnvDefaultFunc("RODE_DISABLE_TRANSPORT_SECURITY", false),
+				},
+				"lazy_init": {
+					Description: "Defers instantiation of the Rode client until the first time the provider is used. This can be useful when provider config depends on other resources being applied.",
+					Type:        schema.TypeBool,
+					Optional:    true,
+					DefaultFunc: schema.EnvDefaultFunc("RODE_LAZY_INIT", false),
 				},
 				"oidc_client_id": {
 					Description: "OIDC/OAuth2 client id that is permitted the client credentials grant. Can be set with the `RODE_OIDC_CLIENT_ID` environment variable.",
@@ -95,8 +100,6 @@ func New(version string) func() *schema.Provider {
 		}
 
 		provider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-			// TODO: configurable lazy init of client
-
 			config := &common.ClientConfig{
 				Rode: &common.RodeClientConfig{
 					Host:                     d.Get("host").(string),
@@ -115,12 +118,19 @@ func New(version string) func() *schema.Provider {
 				},
 			}
 
-			rode, err := common.NewRodeClient(
-				config,
-				grpc.WithUserAgent(provider.UserAgent("terraform-provider-rode", version)),
-			)
+			rodeClient := &rodeClient{
+				config:    config,
+				userAgent: provider.UserAgent("terraform-provider-rode", version),
+			}
 
-			return rode, diag.FromErr(err)
+			lazyInit := d.Get("lazy_init").(bool)
+			if !lazyInit {
+				if err := rodeClient.init(); err != nil {
+					return nil, diag.FromErr(err)
+				}
+			}
+
+			return rodeClient, nil
 		}
 
 		return provider

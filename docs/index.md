@@ -48,6 +48,7 @@ provider "rode" {
 - **basic_username** (String) The username configured in the Rode instance for basic auth. Cannot be configured alongside any of the OIDC options. Can be set with the `RODE_BASIC_USERNAME` environment variable.
 - **disable_transport_security** (Boolean) Disables transport security for the gRPC connection to Rode. Can also be set with the `RODE_DISABLE_TRANSPORT_SECURITY` environment variable.
 - **host** (String) Host and port of the Rode instance. Can also be specified by setting the `RODE_HOST` environment variable.
+- **lazy_init** (Boolean) Defers instantiation of the Rode client until the first time the provider is used. This can be useful when provider config depends on other resources being applied.
 - **oidc_client_id** (String) OIDC/OAuth2 client id that is permitted the client credentials grant. Can be set with the `RODE_OIDC_CLIENT_ID` environment variable.
 - **oidc_client_secret** (String, Sensitive) Corresponding client secret for oidc_client_id. Can be set with the `RODE_OIDC_CLIENT_SECRET` environment variable.
 - **oidc_scopes** (String) A space-delimited list of scopes to request in the client credentials grant. Can also be set with the `RODE_OIDC_SCOPES` environment variable.

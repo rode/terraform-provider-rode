@@ -83,7 +83,10 @@ func resourcePolicyAssignment() *schema.Resource {
 }
 
 func resourcePolicyAssignmentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rode := meta.(v1alpha1.RodeClient)
+	rode := meta.(*rodeClient)
+	if err := rode.init(); err != nil {
+		return diag.FromErr(err)
+	}
 	policyAssignment := &v1alpha1.PolicyAssignment{
 		PolicyVersionId: d.Get("policy_version_id").(string),
 		PolicyGroup:     d.Get("policy_group").(string),
@@ -100,7 +103,10 @@ func resourcePolicyAssignmentCreate(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourcePolicyAssignmentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rode := meta.(v1alpha1.RodeClient)
+	rode := meta.(*rodeClient)
+	if err := rode.init(); err != nil {
+		return diag.FromErr(err)
+	}
 
 	response, err := rode.GetPolicyAssignment(ctx, &v1alpha1.GetPolicyAssignmentRequest{Id: d.Id()})
 
@@ -126,7 +132,10 @@ func resourcePolicyAssignmentUpdate(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourcePolicyAssignmentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rode := meta.(v1alpha1.RodeClient)
+	rode := meta.(*rodeClient)
+	if err := rode.init(); err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err := rode.DeletePolicyAssignment(ctx, &v1alpha1.DeletePolicyAssignmentRequest{Id: d.Id()})
 	if status.Code(err) == codes.NotFound {
