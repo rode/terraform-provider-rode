@@ -43,8 +43,8 @@ func New(version string) func() *schema.Provider {
 				},
 				"lazy_init": {
 					Description: "Defers instantiation of the Rode client until the first time the provider is used. This can be useful when provider config depends on other resources being applied.",
-					Type: schema.TypeBool,
-					Optional: true,
+					Type:        schema.TypeBool,
+					Optional:    true,
 					DefaultFunc: schema.EnvDefaultFunc("RODE_LAZY_INIT", false),
 				},
 				"oidc_client_id": {
@@ -119,7 +119,7 @@ func New(version string) func() *schema.Provider {
 			}
 
 			rodeClient := &rodeClient{
-				config: config,
+				config:    config,
 				userAgent: provider.UserAgent("terraform-provider-rode", version),
 			}
 
