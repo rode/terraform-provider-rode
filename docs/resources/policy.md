@@ -55,7 +55,7 @@ EOF
 
 - **created** (String) Creation timestamp
 - **current_version** (Number) Current version of the policy
-- **deleted** (Boolean)
+- **deleted** (Boolean) Indicates that the policy has been deleted.
 - **policy_version_id** (String) Policy version id
 - **updated** (String) Last updated timestamp
 
