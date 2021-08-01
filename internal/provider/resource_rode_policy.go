@@ -19,8 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/rode/rode/proto/v1alpha1"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 func resourcePolicy() *schema.Resource {
@@ -73,7 +71,7 @@ func resourcePolicy() *schema.Resource {
 				Type:        schema.TypeString,
 			},
 			"deleted": {
-				Description: "",
+				Description: "Indicates that the policy has been deleted.",
 				Computed:    true,
 				Type:        schema.TypeBool,
 			},
@@ -133,11 +131,6 @@ func resourcePolicyDelete(ctx context.Context, d *schema.ResourceData, meta inte
 	_, err := rode.DeletePolicy(ctx, &v1alpha1.DeletePolicyRequest{
 		Id: d.Id(),
 	})
-
-	if status.Code(err) == codes.NotFound {
-		d.SetId("")
-		return nil
-	}
 
 	return diag.FromErr(err)
 }

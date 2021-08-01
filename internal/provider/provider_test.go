@@ -15,6 +15,7 @@
 package provider
 
 import (
+	_ "embed"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"os"
@@ -25,6 +26,8 @@ var (
 	testAccProvider         *schema.Provider
 	testAccProvidersFactory map[string]func() (*schema.Provider, error)
 	fake                    *gofakeit.Faker
+	//go:embed data/minimal.rego
+	minimalPolicy string
 )
 
 func init() {
