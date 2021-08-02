@@ -16,34 +16,22 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/rode/rode/proto/v1alpha1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"strconv"
 	"strings"
 )
 
 var (
-	isUuidValidateDiagFunc          = validation.ToDiagFunc(validation.IsUUID)
 	policyVersionIdValidateDiagFunc = func(v interface{}, p cty.Path) diag.Diagnostics {
-		policyVersionId := v.(string)
+		_, err := parsePolicyVersionId(v.(string))
 
-		parts := strings.Split(policyVersionId, ".")
-		if len(parts) != 2 {
-			return diag.Errorf("policy version id does not match format")
-		}
-
-		policyId := parts[0]
-		_, err := strconv.Atoi(parts[1])
-		if err != nil {
-			return diag.Errorf("policy version id does not contain a version: %s", err)
-		}
-
-		return isUuidValidateDiagFunc(policyId, p)
+		return diag.FromErr(err)
 	}
 )
 
@@ -54,6 +42,9 @@ func resourcePolicyAssignment() *schema.Resource {
 		ReadContext:   resourcePolicyAssignmentRead,
 		UpdateContext: resourcePolicyAssignmentUpdate,
 		DeleteContext: resourcePolicyAssignmentDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: resourcePolicyAssignmentImport,
+		},
 		Schema: map[string]*schema.Schema{
 			"policy_version_id": {
 				Description:      "Unique identifier of the versioned policy",
@@ -144,4 +135,29 @@ func resourcePolicyAssignmentDelete(ctx context.Context, d *schema.ResourceData,
 	}
 
 	return diag.FromErr(err)
+}
+
+func resourcePolicyAssignmentImport(_ context.Context, d *schema.ResourceData, _ interface{}) ([]*schema.ResourceData, error) {
+	assignmentId := d.Id()
+	validationMessage := "policy assignment ids should be of the form: policies/$policyId/assignments/$policyGroupName"
+	parts := strings.Split(assignmentId, "/")
+	if len(parts) != 4 {
+		return nil, fmt.Errorf(validationMessage)
+	}
+
+	if parts[0] != "policies" || parts[2] != "assignments" {
+		return nil, fmt.Errorf(validationMessage)
+	}
+
+	policyId := parts[1]
+	if _, err := uuid.ParseUUID(policyId); err != nil {
+		return nil, fmt.Errorf("invalid policy id: %s", err)
+	}
+
+	policyGroupName := parts[3]
+	if !policyNameRegexp.MatchString(policyGroupName) {
+		return nil, fmt.Errorf("policy group name '%s' does not match naming restrictions", policyGroupName)
+	}
+
+	return []*schema.ResourceData{d}, nil
 }

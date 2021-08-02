@@ -15,10 +15,42 @@
 package provider
 
 import (
+	"fmt"
+	"github.com/hashicorp/go-uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	"strconv"
+	"strings"
 	"time"
 )
 
 func formatProtoTimestamp(timestamp *timestamppb.Timestamp) string {
 	return timestamp.AsTime().Format(time.RFC3339Nano)
+}
+
+type policyVersionIdComponents struct {
+	policyId string
+	version  int
+}
+
+func parsePolicyVersionId(policyVersionId string) (id *policyVersionIdComponents, ver error) {
+	parts := strings.Split(policyVersionId, ".")
+	if len(parts) != 2 {
+		return nil, fmt.Errorf("policy version id does not match format")
+	}
+
+	policyId := parts[0]
+
+	if _, err := uuid.ParseUUID(policyId); err != nil {
+		return nil, fmt.Errorf("invalid policy id: %s", err)
+	}
+
+	version, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return nil, fmt.Errorf("policy version id does not contain a version: %s", err)
+	}
+
+	return &policyVersionIdComponents{
+		policyId,
+		version,
+	}, nil
 }

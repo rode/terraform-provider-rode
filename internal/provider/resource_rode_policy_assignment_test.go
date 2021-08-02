@@ -57,6 +57,11 @@ func TestAccPolicyAssignment_basic(t *testing.T) {
 					testAccCheckPolicyAssignmentExists(resourceName, policyGroup.Name),
 				),
 			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
