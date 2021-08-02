@@ -16,6 +16,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -25,7 +26,8 @@ import (
 
 var (
 	policyNameRegexp                = regexp.MustCompile("^[a-z0-9-_]+$")
-	policyGroupNameValidateDiagFunc = validation.ToDiagFunc(validation.StringMatch(policyNameRegexp, "policy group names may only contain lowercase alphanumeric strings, hyphens, or underscores."))
+	policyNameMessage               = "policy group names may only contain lowercase alphanumeric strings, hyphens, or underscores"
+	policyGroupNameValidateDiagFunc = validation.ToDiagFunc(validation.StringMatch(policyNameRegexp, policyNameMessage))
 )
 
 func resourcePolicyGroup() *schema.Resource {
@@ -35,6 +37,9 @@ func resourcePolicyGroup() *schema.Resource {
 		ReadContext:   resourcePolicyGroupRead,
 		UpdateContext: resourcePolicyGroupUpdate,
 		DeleteContext: resourcePolicyGroupDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: resourcePolicyGroupImport,
+		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Description:      "Unique identifier for the policy group",
@@ -120,4 +125,14 @@ func resourcePolicyGroupDelete(ctx context.Context, d *schema.ResourceData, meta
 	_, err := rode.DeletePolicyGroup(ctx, &v1alpha1.DeletePolicyGroupRequest{Name: d.Id()})
 
 	return diag.FromErr(err)
+}
+
+func resourcePolicyGroupImport(_ context.Context, d *schema.ResourceData, _ interface{}) ([]*schema.ResourceData, error) {
+	name := d.Id()
+
+	if !policyNameRegexp.MatchString(name) {
+		return nil, fmt.Errorf("%s does not match naming restrictions: %s", name, policyNameMessage)
+	}
+
+	return []*schema.ResourceData{d}, nil
 }

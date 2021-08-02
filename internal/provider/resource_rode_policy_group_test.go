@@ -50,6 +50,11 @@ func TestAccPolicyGroup_basic(t *testing.T) {
 					testAccCheckPolicyGroupExists(resourceName, policyGroup),
 				),
 			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
