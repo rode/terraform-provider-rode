@@ -16,6 +16,8 @@ package provider
 
 import (
 	"context"
+	"fmt"
+	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/rode/rode/proto/v1alpha1"
@@ -28,6 +30,9 @@ func resourcePolicy() *schema.Resource {
 		ReadContext:   resourcePolicyRead,
 		UpdateContext: resourcePolicyUpdate,
 		DeleteContext: resourcePolicyDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: resourcePolicyImport,
+		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Description: "Policy name",
@@ -143,4 +148,13 @@ func resourcePolicyDelete(ctx context.Context, d *schema.ResourceData, meta inte
 	})
 
 	return diag.FromErr(err)
+}
+
+func resourcePolicyImport(_ context.Context, d *schema.ResourceData, _ interface{}) ([]*schema.ResourceData, error) {
+	policyId := d.Id()
+	if _, err := uuid.ParseUUID(policyId); err != nil {
+		return nil, fmt.Errorf("invalid policy id: %s", err)
+	}
+
+	return []*schema.ResourceData{d}, nil
 }

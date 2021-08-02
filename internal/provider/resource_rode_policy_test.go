@@ -56,6 +56,11 @@ func TestAccPolicy_basic(t *testing.T) {
 					testAccPolicyExists(resourceName, policy),
 				),
 			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
