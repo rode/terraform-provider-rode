@@ -113,7 +113,21 @@ func resourcePolicyGroupRead(ctx context.Context, d *schema.ResourceData, meta i
 }
 
 func resourcePolicyGroupUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return diag.Errorf("unimplemented")
+	rode := meta.(*rodeClient)
+	if err := rode.init(); err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err := rode.UpdatePolicyGroup(ctx, &v1alpha1.PolicyGroup{
+		Name:        d.Id(),
+		Description: d.Get("description").(string),
+	})
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return resourcePolicyGroupRead(ctx, d, meta)
 }
 
 func resourcePolicyGroupDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
