@@ -18,6 +18,7 @@ import (
 	"github.com/rode/rode/common"
 	"github.com/rode/rode/proto/v1alpha1"
 	"google.golang.org/grpc"
+	"log"
 	"sync"
 )
 
@@ -31,12 +32,19 @@ type rodeClient struct {
 func (r *rodeClient) init() error {
 	var initErr error
 	r.Once.Do(func() {
+		log.Println("[DEBUG] Rode client init")
 		rode, err := common.NewRodeClient(
 			r.config,
 			grpc.WithUserAgent(r.userAgent),
 		)
+
+		if err != nil {
+			log.Printf("[ERROR] An error occurred initializing Rode client: %s\n", err)
+		}
+
 		r.RodeClient = rode
 		initErr = err
+		log.Println("[DEBUG] Rode client init successful")
 	})
 
 	return initErr

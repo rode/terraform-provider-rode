@@ -69,12 +69,12 @@ jobs:
       - name: Run Acceptance Tests
         run: |
           kubectl -n terraform-provider-rode port-forward svc/rode 50051 &
-          trap 'pkill kubectl' EXIT
+          trap 'echo "Stopping port-forward"; pkill kubectl' EXIT
 
           make testacc
       - name: Apply Examples
         run: |
-          kubectl -n terraform-provider-rode port-forward svc/rode 50051 &
+          nohup kubectl -n terraform-provider-rode port-forward svc/rode 50051 &
           trap 'pkill kubectl' EXIT
 
           make install

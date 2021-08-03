@@ -21,6 +21,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/rode/rode/proto/v1alpha1"
+	"log"
 )
 
 func resourcePolicy() *schema.Resource {
@@ -106,10 +107,12 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 		},
 	}
 
+	log.Printf("[DEBUG] Calling CreatePolicy RPC with: %v\n", policy)
 	response, err := rode.CreatePolicy(ctx, policy)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	log.Printf("[DEBUG] Successfully created policy: %v\n", response)
 
 	d.SetId(response.Id)
 
@@ -122,6 +125,7 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interf
 		return diag.FromErr(err)
 	}
 
+	log.Println("[DEBUG] Calling GetPolicy RPC")
 	policy, err := rode.GetPolicy(ctx, &v1alpha1.GetPolicyRequest{Id: d.Id()})
 	if err != nil {
 		return diag.FromErr(err)
@@ -156,13 +160,15 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 		},
 	}
 
-	_, err := rode.UpdatePolicy(ctx, &v1alpha1.UpdatePolicyRequest{
+	log.Printf("[DEBUG] Calling UpdatePolicy RPC with: %v\n", policy)
+	response, err := rode.UpdatePolicy(ctx, &v1alpha1.UpdatePolicyRequest{
 		Policy: policy,
 	})
 
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	log.Printf("[DEBUG] Successfully updated policy: %v\n", response)
 
 	return resourcePolicyRead(ctx, d, meta)
 }
@@ -173,6 +179,7 @@ func resourcePolicyDelete(ctx context.Context, d *schema.ResourceData, meta inte
 		return diag.FromErr(err)
 	}
 
+	log.Println("[DEBUG] Calling DeletePolicy RPC")
 	_, err := rode.DeletePolicy(ctx, &v1alpha1.DeletePolicyRequest{
 		Id: d.Id(),
 	})
