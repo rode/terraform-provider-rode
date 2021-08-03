@@ -68,13 +68,13 @@ jobs:
             ${{ runner.os }}-go-
       - name: Run Acceptance Tests
         run: |
-          (kubectl -n rode-tf port-forward svc/rode 50051 &)> /dev/null
+          (kubectl -n terraform-provider-rode port-forward svc/rode 50051 &)> /dev/null
           trap 'echo "Stopping port-forward"; pkill kubectl' EXIT
 
           make testacc
       - name: Apply Examples
         run: |
-          (kubectl -n rode-tf port-forward svc/rode 50051 &)> /dev/null
+          (kubectl -n terraform-provider-rode port-forward svc/rode 50051 &)> /dev/null
           trap 'echo "Stopping port-forward"; pkill kubectl' EXIT
 
           make install
