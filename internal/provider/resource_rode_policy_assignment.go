@@ -119,7 +119,22 @@ func resourcePolicyAssignmentRead(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourcePolicyAssignmentUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return diag.Errorf("unimplemented")
+	rode := meta.(*rodeClient)
+	if err := rode.init(); err != nil {
+		return diag.FromErr(err)
+	}
+
+	assignment := &v1alpha1.PolicyAssignment{
+		Id:              d.Id(),
+		PolicyVersionId: d.Get("policy_version_id").(string),
+		PolicyGroup:     d.Get("policy_group").(string),
+	}
+	_, err := rode.UpdatePolicyAssignment(ctx, assignment)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return resourcePolicyAssignmentRead(ctx, d, meta)
 }
 
 func resourcePolicyAssignmentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
