@@ -35,7 +35,7 @@ func TestAccPolicy_basic(t *testing.T) {
 		},
 	}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -84,7 +84,7 @@ func TestAccPolicy_update(t *testing.T) {
 	updatedPolicyNewVersion.Policy.Message = fake.LetterN(10)
 	updatedPolicyNewVersion.Policy.RegoContent = updatedMinimalPolicy
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

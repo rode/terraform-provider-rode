@@ -41,7 +41,7 @@ func TestAccPolicyAssignment_basic(t *testing.T) {
 		Name: fmt.Sprintf("tf-acc-%s", strings.ToLower(fake.LetterN(10))),
 	}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -82,7 +82,7 @@ func TestAccPolicyAssignment_update(t *testing.T) {
 	updatedPolicy := proto.Clone(policy).(*v1alpha1.Policy)
 	updatedPolicy.Policy.RegoContent = updatedMinimalPolicy
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -118,7 +118,7 @@ func TestAccPolicyAssignment_invalid_policy_group(t *testing.T) {
 	policyVersionId := fmt.Sprintf("%s.%d", fake.UUID(), fake.Number(1, 5))
 	policyGroupName := fmt.Sprintf("tf-acc-%s-$!@", strings.ToUpper(fake.LetterN(10)))
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -137,7 +137,7 @@ func TestAccPolicyAssignment_invalid_policy_version_id(t *testing.T) {
 	policyVersionId := fake.LetterN(10)
 	policyGroupName := fmt.Sprintf("tf-acc-%s", strings.ToLower(fake.LetterN(10)))
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

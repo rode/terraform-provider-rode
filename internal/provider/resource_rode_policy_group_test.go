@@ -32,7 +32,7 @@ func TestAccPolicyGroup_basic(t *testing.T) {
 		Description: fake.LetterN(10),
 	}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -71,7 +71,7 @@ func TestAccPolicyGroup_update(t *testing.T) {
 		Description: fake.LetterN(10),
 	}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -108,7 +108,7 @@ func TestAccPolicyGroup_validate_name(t *testing.T) {
 		Name: fmt.Sprintf("tf-acc-%s!@#$", strings.ToUpper(fake.LetterN(10))),
 	}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
