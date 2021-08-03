@@ -19,6 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/rode/rode/common"
+	"log"
 )
 
 func init() {
@@ -100,6 +101,7 @@ func New(version string) func() *schema.Provider {
 		}
 
 		provider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+			log.Println("[DEBUG] Provider configure called")
 			config := &common.ClientConfig{
 				Rode: &common.RodeClientConfig{
 					Host:                     d.Get("host").(string),
@@ -125,11 +127,13 @@ func New(version string) func() *schema.Provider {
 
 			lazyInit := d.Get("lazy_init").(bool)
 			if !lazyInit {
+				log.Println("[DEBUG] Lazy initialization is disabled, instantiating Rode client immediately")
 				if err := rodeClient.init(); err != nil {
 					return nil, diag.FromErr(err)
 				}
 			}
 
+			log.Println("[DEBUG] Delaying Rode client initialization because lazy_init is set")
 			return rodeClient, nil
 		}
 

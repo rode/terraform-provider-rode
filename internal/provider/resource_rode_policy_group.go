@@ -21,6 +21,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/rode/rode/proto/v1alpha1"
+	"log"
 	"regexp"
 )
 
@@ -82,11 +83,12 @@ func resourcePolicyGroupCreate(ctx context.Context, d *schema.ResourceData, meta
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
 	}
+	log.Printf("[DEBUG] Calling CreatePolicyGroup RPC with: %v\n", policyGroup)
 	response, err := rode.CreatePolicyGroup(ctx, policyGroup)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
+	log.Printf("[DEBUG] Successfully created policy group: %v\n", response)
 	d.SetId(response.Name)
 
 	return resourcePolicyGroupRead(ctx, d, meta)
@@ -98,6 +100,7 @@ func resourcePolicyGroupRead(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.FromErr(err)
 	}
 
+	log.Println("[DEBUG] Calling GetPolicyGroup RPC")
 	policyGroup, err := rode.GetPolicyGroup(ctx, &v1alpha1.GetPolicyGroupRequest{Name: d.Id()})
 	if err != nil {
 		return diag.FromErr(err)
@@ -118,10 +121,13 @@ func resourcePolicyGroupUpdate(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
-	_, err := rode.UpdatePolicyGroup(ctx, &v1alpha1.PolicyGroup{
+	policyGroup := &v1alpha1.PolicyGroup{
 		Name:        d.Id(),
 		Description: d.Get("description").(string),
-	})
+	}
+	log.Printf("[DEBUG] Calling UpdatePolicyGroup RPC with: %v\n", policyGroup)
+	response, err := rode.UpdatePolicyGroup(ctx, policyGroup)
+	log.Printf("[DEBUG] Successfully updated policy group: %v\n", response)
 
 	if err != nil {
 		return diag.FromErr(err)
@@ -136,6 +142,7 @@ func resourcePolicyGroupDelete(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
+	log.Println("[DEBUG] Calling DeletePolicyGroup RPC")
 	_, err := rode.DeletePolicyGroup(ctx, &v1alpha1.DeletePolicyGroupRequest{Name: d.Id()})
 
 	return diag.FromErr(err)

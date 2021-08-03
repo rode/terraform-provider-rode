@@ -24,6 +24,7 @@ import (
 	"github.com/rode/rode/proto/v1alpha1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"log"
 	"strings"
 )
 
@@ -83,11 +84,13 @@ func resourcePolicyAssignmentCreate(ctx context.Context, d *schema.ResourceData,
 		PolicyGroup:     d.Get("policy_group").(string),
 	}
 
+	log.Printf("[DEBUG] Calling CreatePolicyAssignment RPC with: %v\n", policyAssignment)
 	response, err := rode.CreatePolicyAssignment(ctx, policyAssignment)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	log.Printf("[DEBUG] Successfully created policy assignment: %v\n", response)
 	d.SetId(response.Id)
 
 	return resourcePolicyAssignmentRead(ctx, d, meta)
@@ -99,10 +102,12 @@ func resourcePolicyAssignmentRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
+	log.Println("[DEBUG] Calling GetPolicyAssignment RPC")
 	response, err := rode.GetPolicyAssignment(ctx, &v1alpha1.GetPolicyAssignmentRequest{Id: d.Id()})
 
 	if err != nil {
 		if status.Code(err) == codes.NotFound {
+			log.Println("[DEBUG] Policy assignment appears to have been deleted")
 			d.SetId("")
 			return nil
 		}
@@ -129,10 +134,12 @@ func resourcePolicyAssignmentUpdate(ctx context.Context, d *schema.ResourceData,
 		PolicyVersionId: d.Get("policy_version_id").(string),
 		PolicyGroup:     d.Get("policy_group").(string),
 	}
-	_, err := rode.UpdatePolicyAssignment(ctx, assignment)
+	log.Printf("[DEBUG] Calling UpdatePolicyAssignment RPC with: %v\n", assignment)
+	response, err := rode.UpdatePolicyAssignment(ctx, assignment)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	log.Printf("[DEBUG] Successfully updated policy assignment: %v\n", response)
 
 	return resourcePolicyAssignmentRead(ctx, d, meta)
 }
@@ -143,8 +150,10 @@ func resourcePolicyAssignmentDelete(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
+	log.Println("[DEBUG] Calling DeletePolicyAssignment RPC")
 	_, err := rode.DeletePolicyAssignment(ctx, &v1alpha1.DeletePolicyAssignmentRequest{Id: d.Id()})
 	if status.Code(err) == codes.NotFound {
+		log.Println("[DEBUG] Assignment was already deleted")
 		d.SetId("")
 		return nil
 	}
