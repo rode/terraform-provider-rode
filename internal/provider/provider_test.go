@@ -28,6 +28,8 @@ var (
 	fake                    *gofakeit.Faker
 	//go:embed data/minimal.rego
 	minimalPolicy string
+	//go:embed data/updated.rego
+	updatedMinimalPolicy string
 )
 
 func init() {

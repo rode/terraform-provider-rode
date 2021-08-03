@@ -33,6 +33,13 @@ func resourcePolicy() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: resourcePolicyImport,
 		},
+		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+			if diff.HasChange("rego_content") {
+				return diff.SetNewComputed("policy_version_id")
+			}
+
+			return nil
+		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Description: "Policy name",
@@ -134,7 +141,30 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interf
 }
 
 func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return diag.Errorf("unimplemented")
+	rode := meta.(*rodeClient)
+	if err := rode.init(); err != nil {
+		return diag.FromErr(err)
+	}
+
+	policy := &v1alpha1.Policy{
+		Id:          d.Id(),
+		Name:        d.Get("name").(string),
+		Description: d.Get("description").(string),
+		Policy: &v1alpha1.PolicyEntity{
+			Message:     d.Get("message").(string),
+			RegoContent: d.Get("rego_content").(string),
+		},
+	}
+
+	_, err := rode.UpdatePolicy(ctx, &v1alpha1.UpdatePolicyRequest{
+		Policy: policy,
+	})
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return resourcePolicyRead(ctx, d, meta)
 }
 
 func resourcePolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

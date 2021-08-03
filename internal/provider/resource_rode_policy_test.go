@@ -20,6 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/rode/rode/proto/v1alpha1"
+	"google.golang.org/protobuf/proto"
 	"strings"
 	"testing"
 )
@@ -53,7 +54,74 @@ func TestAccPolicy_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "created"),
 					resource.TestCheckResourceAttrSet(resourceName, "updated"),
 					resource.TestCheckResourceAttr(resourceName, "deleted", "false"),
-					testAccPolicyExists(resourceName, policy),
+					testAccPolicyExists(resourceName, policy, 1),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccPolicy_update(t *testing.T) {
+	resourceName := "rode_policy.test"
+	policy := &v1alpha1.Policy{
+		Name:        fmt.Sprintf("tf-acc-%s", fake.LetterN(10)),
+		Description: fake.LetterN(10),
+		Policy: &v1alpha1.PolicyEntity{
+			RegoContent: minimalPolicy,
+		},
+	}
+
+	updatedPolicy := proto.Clone(policy).(*v1alpha1.Policy)
+	updatedPolicy.Name = fmt.Sprintf("tf-acc-%s", fake.LetterN(10))
+	updatedPolicy.Description = fake.LetterN(10)
+
+	updatedPolicyNewVersion := proto.Clone(updatedPolicy).(*v1alpha1.Policy)
+	updatedPolicyNewVersion.Policy.Message = fake.LetterN(10)
+	updatedPolicyNewVersion.Policy.RegoContent = updatedMinimalPolicy
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+		ProviderFactories: testAccProvidersFactory,
+		CheckDestroy:      testAccPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccPolicyConfig(policy),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", policy.Name),
+					resource.TestCheckResourceAttr(resourceName, "description", policy.Description),
+					testAccPolicyExists(resourceName, policy, 1),
+				),
+			},
+			{
+				Config: testAccPolicyConfig(updatedPolicy),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", updatedPolicy.Name),
+					resource.TestCheckResourceAttr(resourceName, "description", updatedPolicy.Description),
+					resource.TestCheckResourceAttr(resourceName, "current_version", "1"),
+					testAccPolicyExists(resourceName, updatedPolicy, 1),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: testAccPolicyConfig(updatedPolicyNewVersion),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", updatedPolicyNewVersion.Name),
+					resource.TestCheckResourceAttr(resourceName, "description", updatedPolicyNewVersion.Description),
+					resource.TestCheckResourceAttr(resourceName, "current_version", "2"),
+					resource.TestCheckResourceAttr(resourceName, "message", updatedPolicyNewVersion.Policy.Message),
+					resource.TestCheckResourceAttrSet(resourceName, "rego_content"),
+					testAccPolicyExists(resourceName, updatedPolicyNewVersion, 2),
 				),
 			},
 			{
@@ -83,7 +151,7 @@ EOF
 	)
 }
 
-func testAccPolicyExists(resourceName string, expected *v1alpha1.Policy) resource.TestCheckFunc {
+func testAccPolicyExists(resourceName string, expected *v1alpha1.Policy, expectedVersion uint32) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -110,8 +178,8 @@ func testAccPolicyExists(resourceName string, expected *v1alpha1.Policy) resourc
 			return fmt.Errorf("expected policy description to equal '%s' but was '%s'", expected.Description, actual.Description)
 		}
 
-		if actual.CurrentVersion != 1 {
-			return fmt.Errorf("policy should be at initial version but was at %d", actual.CurrentVersion)
+		if actual.CurrentVersion != expectedVersion {
+			return fmt.Errorf("policy should be at version %d but was at %d", expectedVersion, actual.CurrentVersion)
 		}
 
 		if strings.TrimSpace(actual.Policy.RegoContent) != strings.TrimSpace(expected.Policy.RegoContent) {
