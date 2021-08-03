@@ -20,7 +20,6 @@ resource "rode_policy_group" "example" {
 resource "rode_policy" "example" {
   name         = "example"
   description  = "policy managed by Terraform"
-  message      = "Terraform"
   rego_content = <<EOF
 package tf_example
 

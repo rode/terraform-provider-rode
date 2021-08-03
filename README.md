@@ -7,13 +7,11 @@ A Terraform provider for [rode](https://github.com/rode/rode).
 
 ## Resources
 
-- [x] `rode_policy`*
-- [x] `rode_policy_group`*
-- [x] `rode_policy_assignment`*
+- `rode_policy`
+- `rode_policy_group`
+- `rode_policy_assignment`
 
-> \* Implemented for create, read, & delete. Missing update and import 
-
-See the [example](examples) directory for resource usage.
+See the [examples](examples) directory for resource usage, and the [docs](docs) directory for documentation.
 
 ## Local Development
 

@@ -50,6 +50,55 @@ func TestAccPolicyGroup_basic(t *testing.T) {
 					testAccCheckPolicyGroupExists(resourceName, policyGroup),
 				),
 			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccPolicyGroup_update(t *testing.T) {
+	resourceName := "rode_policy_group.test"
+	policyGroupName := fmt.Sprintf("tf-acc-%s", strings.ToLower(fake.LetterN(10)))
+	policyGroup := &v1alpha1.PolicyGroup{
+		Name:        policyGroupName,
+		Description: fake.LetterN(10),
+	}
+	updatedPolicyGroup := &v1alpha1.PolicyGroup{
+		Name:        policyGroupName,
+		Description: fake.LetterN(10),
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+		ProviderFactories: testAccProvidersFactory,
+		CheckDestroy:      testAccCheckPolicyGroupDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccPolicyGroupConfig(policyGroup),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", policyGroup.Name),
+					resource.TestCheckResourceAttr(resourceName, "description", policyGroup.Description),
+					testAccCheckPolicyGroupExists(resourceName, policyGroup),
+				),
+			},
+			{
+				Config: testAccPolicyGroupConfig(updatedPolicyGroup),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", updatedPolicyGroup.Name),
+					resource.TestCheckResourceAttr(resourceName, "description", updatedPolicyGroup.Description),
+					testAccCheckPolicyGroupExists(resourceName, updatedPolicyGroup),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

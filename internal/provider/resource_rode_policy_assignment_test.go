@@ -23,6 +23,7 @@ import (
 	"github.com/rode/rode/proto/v1alpha1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
 	"regexp"
 	"strings"
 	"testing"
@@ -56,6 +57,58 @@ func TestAccPolicyAssignment_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "updated"),
 					testAccCheckPolicyAssignmentExists(resourceName, policyGroup.Name),
 				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccPolicyAssignment_update(t *testing.T) {
+	resourceName := "rode_policy_assignment.test"
+	policy := &v1alpha1.Policy{
+		Name: fmt.Sprintf("tf-acc-%s", fake.LetterN(10)),
+		Policy: &v1alpha1.PolicyEntity{
+			RegoContent: minimalPolicy,
+		},
+	}
+	policyGroup := &v1alpha1.PolicyGroup{
+		Name: fmt.Sprintf("tf-acc-%s", strings.ToLower(fake.LetterN(10))),
+	}
+
+	updatedPolicy := proto.Clone(policy).(*v1alpha1.Policy)
+	updatedPolicy.Policy.RegoContent = updatedMinimalPolicy
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+		ProviderFactories: testAccProvidersFactory,
+		CheckDestroy:      testAccPolicyAssignmentDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccPolicyAssignmentFullConfig(policy, policyGroup),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "policy_group", policyGroup.Name),
+					resource.TestCheckResourceAttrSet(resourceName, "policy_version_id"),
+					testAccCheckPolicyAssignmentExists(resourceName, policyGroup.Name),
+				),
+			},
+			{
+				Config: testAccPolicyAssignmentFullConfig(updatedPolicy, policyGroup),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "policy_group", policyGroup.Name),
+					resource.TestCheckResourceAttrSet(resourceName, "policy_version_id"),
+					testAccCheckPolicyAssignmentExists(resourceName, policyGroup.Name),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
