@@ -15,11 +15,12 @@
 package provider
 
 import (
+	"log"
+	"sync"
+
 	"github.com/rode/rode/common"
 	"github.com/rode/rode/proto/v1alpha1"
 	"google.golang.org/grpc"
-	"log"
-	"sync"
 )
 
 type rodeClient struct {
@@ -29,8 +30,9 @@ type rodeClient struct {
 	userAgent string
 }
 
+var clientInitErr error
+
 func (r *rodeClient) init() error {
-	var initErr error
 	r.Once.Do(func() {
 		log.Println("[DEBUG] Rode client init")
 		rode, err := common.NewRodeClient(
@@ -43,9 +45,9 @@ func (r *rodeClient) init() error {
 		}
 
 		r.RodeClient = rode
-		initErr = err
+		clientInitErr = err
 		log.Println("[DEBUG] Rode client init successful")
 	})
 
-	return initErr
+	return clientInitErr
 }

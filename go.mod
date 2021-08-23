@@ -1,4 +1,4 @@
-module github.com/alexashley/terraform-provider-rode
+module github.com/rode/terraform-provider-rode
 
 go 1.16
 

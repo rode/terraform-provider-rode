@@ -18,15 +18,16 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
+	"regexp"
+	"strings"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/rode/rode/proto/v1alpha1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
-	"regexp"
-	"strings"
-	"testing"
 )
 
 func TestAccPolicyAssignment_basic(t *testing.T) {

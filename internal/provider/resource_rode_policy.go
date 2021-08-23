@@ -17,11 +17,12 @@ package provider
 import (
 	"context"
 	"fmt"
+	"log"
+
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/rode/rode/proto/v1alpha1"
-	"log"
 )
 
 func resourcePolicy() *schema.Resource {
