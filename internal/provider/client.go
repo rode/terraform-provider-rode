@@ -31,6 +31,7 @@ type rodeClient struct {
 }
 
 var clientInitErr error
+
 func (r *rodeClient) init() error {
 	r.Once.Do(func() {
 		log.Println("[DEBUG] Rode client init")
