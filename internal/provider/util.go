@@ -16,11 +16,12 @@ package provider
 
 import (
 	"fmt"
-	"github.com/hashicorp/go-uuid"
-	"google.golang.org/protobuf/types/known/timestamppb"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/hashicorp/go-uuid"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func formatProtoTimestamp(timestamp *timestamppb.Timestamp) string {

@@ -1,6 +1,6 @@
 # terraform-provider-rode
 
-[![test badge](https://github.com/alexashley/terraform-provider-rode/actions/workflows/test.yaml/badge.svg?branch=main)](https://github.com/alexashley/terraform-provider-rode/actions/workflows/test.yaml?query=branch%3Amain)
+[![test badge](https://github.com/rode/terraform-provider-rode/actions/workflows/test.yaml/badge.svg?branch=main)](https://github.com/rode/terraform-provider-rode/actions/workflows/test.yaml?query=branch%3Amain)
 
 
 A Terraform provider for [rode](https://github.com/rode/rode).

@@ -17,9 +17,10 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/alexashley/terraform-provider-rode/internal/provider"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 	"log"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
+	"github.com/rode/terraform-provider-rode/internal/provider"
 )
 
 //go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs

@@ -17,12 +17,13 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strings"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/rode/rode/proto/v1alpha1"
 	"google.golang.org/protobuf/proto"
-	"strings"
-	"testing"
 )
 
 func TestAccPolicy_basic(t *testing.T) {

@@ -17,12 +17,13 @@ package provider
 import (
 	"context"
 	"fmt"
+	"log"
+	"regexp"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/rode/rode/proto/v1alpha1"
-	"log"
-	"regexp"
 )
 
 var (

@@ -16,10 +16,11 @@ package provider
 
 import (
 	_ "embed"
-	"github.com/brianvoe/gofakeit/v6"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"os"
 	"testing"
+
+	"github.com/brianvoe/gofakeit/v6"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 var (

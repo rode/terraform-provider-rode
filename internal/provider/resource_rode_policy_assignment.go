@@ -17,6 +17,9 @@ package provider
 import (
 	"context"
 	"fmt"
+	"log"
+	"strings"
+
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -24,8 +27,6 @@ import (
 	"github.com/rode/rode/proto/v1alpha1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"log"
-	"strings"
 )
 
 var (

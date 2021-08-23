@@ -15,11 +15,12 @@
 package provider
 
 import (
+	"log"
+	"sync"
+
 	"github.com/rode/rode/common"
 	"github.com/rode/rode/proto/v1alpha1"
 	"google.golang.org/grpc"
-	"log"
-	"sync"
 )
 
 type rodeClient struct {
