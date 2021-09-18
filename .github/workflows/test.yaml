@@ -48,7 +48,7 @@ jobs:
           terraform_version: 1.0.3
           terraform_wrapper: false # using the wrapper breaks TF acceptance tests
       - name: Start Rode Environment
-        uses: rode/rode-dev-env@main # TODO: flip back to tag
+        uses: rode/rode-dev-env@composite # TODO: flip back to tag
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
