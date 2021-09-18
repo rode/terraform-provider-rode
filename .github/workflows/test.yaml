@@ -42,17 +42,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Kind Cluster
-        uses: helm/kind-action@v1.2.0
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: 1.0.3
           terraform_wrapper: false # using the wrapper breaks TF acceptance tests
-      - name: Deploy Test Environment
-        run: |
-          terraform -chdir=services init
-          terraform -chdir=services apply -auto-approve
+      - name: Start Rode Environment
+        uses: rode/rode-dev-env@v0.1.0
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
@@ -67,16 +63,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
       - name: Run Acceptance Tests
-        run: |
-          (kubectl -n terraform-provider-rode port-forward svc/rode 50051 &)> /dev/null
-          trap 'echo "Stopping port-forward"; pkill kubectl' EXIT
-
-          make testacc
+        run: make testacc
       - name: Apply Examples
         run: |
-          (kubectl -n terraform-provider-rode port-forward svc/rode 50051 &)> /dev/null
-          trap 'echo "Stopping port-forward"; pkill kubectl' EXIT
-
           make install
           terraform -chdir=examples init
           terraform -chdir=examples apply -auto-approve
