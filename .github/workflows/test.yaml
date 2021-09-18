@@ -2,43 +2,43 @@ name: test
 on: push
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Setup Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.17
-      - name: Configure Go Caches
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-      - name: Check Tidy
-        run: |
-          go mod tidy && git diff --exit-code go.mod go.sum
-      - name: Download Dependencies
-        run: |
-          go mod download
-      - name: Check Formatting & Test
-        run: |
-          make test
-      - name: Build Provider
-        run: |
-          make build
-      - name: Check Documentation
-        run: |
-          make generate
-          git diff --exit-code docs/
+#  test:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v2
+#      - name: Setup Go
+#        uses: actions/setup-go@v2
+#        with:
+#          go-version: 1.17
+#      - name: Configure Go Caches
+#        uses: actions/cache@v2
+#        with:
+#          path: |
+#            ~/.cache/go-build
+#            ~/go/pkg/mod
+#          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+#          restore-keys: |
+#            ${{ runner.os }}-go-
+#      - name: Check Tidy
+#        run: |
+#          go mod tidy && git diff --exit-code go.mod go.sum
+#      - name: Download Dependencies
+#        run: |
+#          go mod download
+#      - name: Check Formatting & Test
+#        run: |
+#          make test
+#      - name: Build Provider
+#        run: |
+#          make build
+#      - name: Check Documentation
+#        run: |
+#          make generate
+#          git diff --exit-code docs/
   acceptance:
     runs-on: ubuntu-latest
-    needs: test
+#    needs: test
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -48,7 +48,7 @@ jobs:
           terraform_version: 1.0.3
           terraform_wrapper: false # using the wrapper breaks TF acceptance tests
       - name: Start Rode Environment
-        uses: rode/rode-dev-env@v0.1.0
+        uses: rode/rode-dev-env@main # TODO: flip back to tag
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
