@@ -71,7 +71,7 @@ jobs:
           terraform -chdir=examples apply -auto-approve
       - name: Stop Rode Environment
         uses: rode/rode-dev-env@composite # TODO: flip back to tag
-        if: ${{ always() }}
+        if: always()
         with:
           stage: 'post'
   license-check:
