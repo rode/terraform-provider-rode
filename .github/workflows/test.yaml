@@ -48,7 +48,7 @@ jobs:
           terraform_version: 1.0.3
           terraform_wrapper: false # using the wrapper breaks TF acceptance tests
       - name: Start Rode Environment
-        uses: rode/rode-dev-env@v0.1.0
+        uses: rode/rode-dev-env@js
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
@@ -70,7 +70,7 @@ jobs:
           terraform -chdir=examples init
           terraform -chdir=examples apply -auto-approve
       - name: Stop Rode Environment
-        uses: rode/rode-dev-env@v0.1.0
+        uses: rode/rode-dev-env@js
         if: always()
         with:
           stage: 'post'
